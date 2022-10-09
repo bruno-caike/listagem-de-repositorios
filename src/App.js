@@ -45,7 +45,7 @@ function App() {
       setPage(page + 1);
       toastr.success("Busca efetuada com sucesso");
     } else {
-      toastr.error("Digite no mínimo 3 sílabas!")
+      toastr.error("Digite no mínimo 3 sílabas!");
     }
   }
 
@@ -64,7 +64,7 @@ function App() {
         refNext.current.disabled = false;
       }
     } else {
-      toastr.error("Não tem como realizar está ação na paginação!")
+      toastr.error("Não tem como realizar está ação na paginação!");
     }
   }
 
