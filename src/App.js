@@ -26,22 +26,45 @@ toastr.options = {
 }
 
 function App() {
+  const [search, setSearch] = useState("");
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const refSearch = useRef(null);
+  const refPrevious = useRef(null);
+  const refNext = useRef(null);
 
   const submitFormSearch = async (e) => {
     e.preventDefault();
-    const search = refSearch.current.value;
-    if (search.length >= 3) {
-      const result = await SearchRepositories(search, page, "updated");
+    const inputSearch = refSearch.current.value;
+    if (inputSearch.length >= 3) {
+      const result = await SearchRepositories(inputSearch, page, "updated");
+      setSearch(inputSearch);
       setData(result.items);
       setTotalPages(Math.ceil(result.total_count / 40));
       setPage(page + 1);
-      toastr.success("Busca efetuada com sucesso")
+      toastr.success("Busca efetuada com sucesso");
     } else {
       toastr.error("Digite no mínimo 3 sílabas!")
+    }
+  }
+
+  const handlePagination = async (next) => {
+    const verifyPagination = next ? (page - 1 <= totalPages ? true : false) : (page - 1 > 0 ? true : false);
+    if (verifyPagination) {
+      const result = await SearchRepositories(search, page, "updated");
+      setData(result.items);
+      setTotalPages(Math.ceil(result.total_count / 40));
+      setPage(next ? page + 1 : page - 1);
+      if (next) {
+        page + 1 <= Math.ceil(result.total_count / 40) ? refNext.current.disabled = false : refNext.current.disabled = true;
+        refPrevious.current.disabled = false
+      } else {
+        page - 1 > 1 ? refPrevious.current.disabled = false : refPrevious.current.disabled = true;
+        refNext.current.disabled = false;
+      }
+    } else {
+      toastr.error("Não tem como realizar está ação na paginação!")
     }
   }
 
@@ -55,23 +78,31 @@ function App() {
         </form>
       </div>
       {data.length > 0 ?
-        <div className="grid-all-repositories">
-          {data.map(d => {
-            return (
-              <Card 
-                key={d.id}
-                name={d.name}
-                url_img={d.owner.avatar_url}
-                login={d.owner.login}
-                type={d.owner.type}
-                visibility={d.visibility}
-                updated_at={d.updated_at}
-                url={d.html_url}
-                language={d.language}
-              />
-            );
-        })}
-        </div>
+        <>
+          <h4 className="header-pages">Página: {page - 1}</h4>
+          <div className="grid-all-repositories">
+              {data.map(d => {
+                return (
+                  <Card 
+                    key={d.id}
+                    name={d.name}
+                    url_img={d.owner.avatar_url}
+                    login={d.owner.login}
+                    type={d.owner.type}
+                    visibility={d.visibility}
+                    updated_at={d.updated_at}
+                    url={d.html_url}
+                    language={d.language}
+                  />
+                );
+            })}
+          </div>
+          <div className='div-btns-paginate'>
+            <button type='button' onClick={() => handlePagination(false)} ref={refPrevious}>Anterior</button>
+            <button type='button' onClick={() => handlePagination(true)} ref={refNext}>Próximo</button>
+          </div>
+        </>
+       
         : <p className='repositories-not-found'>Nenhum repositório encontrado...</p>}
     </div>
   );
