@@ -72,7 +72,7 @@ function App() {
             );
         })}
         </div>
-        : <p>Nenhum repositório listado...</p>}
+        : <p className='repositories-not-found'>Nenhum repositório encontrado...</p>}
     </div>
   );
 }
